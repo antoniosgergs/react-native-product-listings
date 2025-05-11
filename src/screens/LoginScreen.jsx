@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../context/AuthContext';
 import { normalize } from '../utils/responsive';
-import { useTheme } from '../utils/theme/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 
 
 
@@ -17,6 +17,7 @@ const schema = z.object({
 
 export default function LoginScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const { login } = useAuth();
 
@@ -36,36 +37,37 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Switch
         value={isDarkMode}
         onValueChange={toggleTheme}
       />
 
-      <Text style={styles.title}>Login</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Login</Text>
 
-      <TextInput
-        placeholder="Username"
-        style={styles.input}
-        onChangeText={text => setValue('email', text)}
-      />
+
+        <TextInput
+            placeholder="Username"
+            placeholderTextColor={colors.inputText}
+            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]}
+            onChangeText={text => setValue('email', text)}
+        />
       {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
 
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        secureTextEntry
-        onChangeText={text => setValue('password', text)}
-      />
-      {errors.password && (
-        <Text style={styles.error}>{errors.password.message}</Text>
-      )}
+        <TextInput
+            placeholder="Password"
+            placeholderTextColor={colors.inputText}
+            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]}
+            secureTextEntry
+            onChangeText={text => setValue('password', text)}
+        />
+        {errors.password && <Text style={[styles.error, { color: 'red' }]}>{errors.password.message}</Text>}
 
-      <Button title="Login" onPress={handleSubmit(onSubmit)} />
-      <View style={styles.link}>
-        <Text onPress={() => navigation.navigate('SignUp')}>
-          Don't have an account? Sign Up
-        </Text>
+        <Button title="Login" onPress={handleSubmit(onSubmit)} />
+        <View style={styles.link}>
+          <Text style={{ color: colors.text }} onPress={() => navigation.navigate('SignUp')}>
+            Don't have an account? Sign Up
+          </Text>
       </View>
     </View>
   );

@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, FlatList,TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ProductCard from '../components/ProductCard';
 import { useNavigation } from '@react-navigation/native';
+import {useTheme} from '../context/ThemeContext';
 
 
 const PRODUCT_DATA = [
@@ -116,16 +117,28 @@ const PRODUCT_DATA = [
 ];
 
 export default function ProductListScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Smartphone Catalog</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.header,
+        {
+          color: colors.text,
+        }]
+      }>
+        Catalog
+      </Text>
         <FlatList
+          style={[styles.container, { backgroundColor: colors.background }]}
           data={PRODUCT_DATA}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <ProductCard item={item}
-             onPress={() =>  navigation.navigate('ProductDetails', { product: item }
+            <ProductCard
+              item={item}
+             onPress={() =>  navigation.navigate('ProductDetails',
+               {
+                 product: item,
+               }
              )}
             />
           )}
@@ -145,13 +158,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
     textAlign: 'center',
-  },
-  PRODUCT_CARD: {
-    image: {
-      width: '100%',
-      height: 300,
-      borderRadius: 12,
-    },
   },
 
 });

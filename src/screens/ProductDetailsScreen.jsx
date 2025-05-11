@@ -2,16 +2,18 @@ import React from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {fonts} from '../utils/fonts';
+import {useTheme} from '../context/ThemeContext';
 
 const ProductDetailsScreen = ({ route }) => {
+  const { colors } = useTheme();
   const { product } = route.params;
 
   return (
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
         <Image source={{ uri: product.images[0].url }} style={styles.image} />
-        <Text style={styles.title}>{product.title}</Text>
-        <Text style={styles.price}>${product.price}</Text>
-        <Text style={styles.description}>{product.description}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{product.title}</Text>
+        <Text style={[styles.price, { color: colors.text }]}>${product.price}</Text>
+        <Text style={[styles.description, { color: colors.text }]}>{product.description}</Text>
         <TouchableOpacity style={styles.buttonContainerShare}>
           <Icon name="share-outline" size={30} color= '#3250CD' />
         </TouchableOpacity>

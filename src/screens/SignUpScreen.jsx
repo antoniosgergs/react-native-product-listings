@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { normalize } from '../utils/responsive';
+import {useTheme} from '../context/ThemeContext';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -14,6 +15,7 @@ const schema = z.object({
 });
 
 export default function SignUpScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation();
 
   const {
@@ -29,24 +31,25 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Sign Up</Text>
 
-      <TextInput placeholder="Name" style={styles.input} onChangeText={(text) => setValue('name', text)} />
+      <TextInput placeholder="Name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('name', text)} />
       {errors.name && <Text style={styles.error}>{errors.name.message}</Text>}
 
-      <TextInput placeholder="Email" style={styles.input} onChangeText={(text) => setValue('email', text)} />
+      <TextInput placeholder="Email" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('email', text)} />
       {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
 
       <TextInput
         placeholder="Password"
-        style={styles.input}
+        placeholderTextColor={colors.inputText}
+        style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]}
         secureTextEntry
         onChangeText={(text) => setValue('password', text)}
       />
       {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
 
-      <TextInput placeholder="Phone" style={styles.input} onChangeText={(text) => setValue('phone', text)} />
+      <TextInput placeholder="Phone" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('phone', text)} />
       {errors.phone && <Text style={styles.error}>{errors.phone.message}</Text>}
 
       <Button title="Sign Up" onPress={handleSubmit(onSubmit)} />
