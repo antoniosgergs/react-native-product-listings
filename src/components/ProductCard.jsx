@@ -1,17 +1,20 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
 import { normalize } from '../utils/responsive';
+import {useTheme} from '../context/ThemeContext';
 
-const ProductCard = ({ item, onPress }) => (
-  <Pressable onPress={onPress} style={styles.card}>
-    <Image source={{ uri: item.images[0].url }} style={styles.image} />
-    <View style={styles.info}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
-      <Text style={styles.price}>${item.price}</Text>
-    </View>
-  </Pressable>
-);
+const ProductCard = ({ item, onPress }) =>{
+  const { colors } = useTheme();
+  return(
+    <Pressable onPress={onPress} style={styles.card}>
+      <Image source={{ uri: item.images[0].url }} style={styles.image} />
+      <View style={[styles.infocontainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+        <Text style={[styles.price, { color: colors.text }]}>${item.price}</Text>
+      </View>
+    </Pressable>
+  );
+};
 
 export default ProductCard;
 

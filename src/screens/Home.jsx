@@ -4,10 +4,10 @@ import { View, Text, StyleSheet } from 'react-native';
 const Home = () => {
   return(
     <View style={styles.container}>
-      <Text style={styles.text}>Home</Text>
+      <Text style={styles.text}>Shop</Text>
     </View>
-  )
-}
+  );
+};
 export default Home;
 
 const styles = StyleSheet.create({
@@ -23,5 +23,5 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 20,
     textAlign: 'center',
-  }
-})
+  },
+});
