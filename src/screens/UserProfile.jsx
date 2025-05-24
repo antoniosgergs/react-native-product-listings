@@ -106,7 +106,7 @@ const UserProfile = () => {
 
        <Text style={[{ color: colors.text }]}>Email: {watch('email')}</Text>
 
-       {profileImage && <Image source={{ uri: watch('newProfileImage')?.uri ?  watch('newProfileImage').uri: `${API_URL}/${watch('profileImage')}` }} style={styles.image} />}
+       {profileImage && <Image source={{ uri: watch('newProfileImage')?.uri ?  watch('newProfileImage').uri : `${API_URL}/${watch('profileImage')}` }} style={styles.image} />}
 
        <View style={styles.button}>
          <Button title={'Add profile image from gallery'} onPress={addUserImageFromGallery} />

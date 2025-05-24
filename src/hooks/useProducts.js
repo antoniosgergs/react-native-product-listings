@@ -30,7 +30,7 @@ const useProducts = ({productId, enabled = false}) => {
   const getProductByIdQuery = useQuery({
     queryKey: ['product'],
     queryFn: getProductById,
-    enabled: productId ? true: false
+    enabled: productId ? true : false,
   });
 
   const addProductFn = async (product) => {
@@ -39,7 +39,7 @@ const useProducts = ({productId, enabled = false}) => {
     formData.append('title', product.title);
     formData.append('description', product.description);
     formData.append('price', product.price);
-    formData.append('location', JSON.stringify({"name":"Dummy Place","longitude":35.12345,"latitude":33.56789}));
+    formData.append('location', JSON.stringify({'name':'Dummy Place','longitude':35.12345,'latitude':33.56789}));
 
     if(product.images){
       const image = {
@@ -55,7 +55,7 @@ const useProducts = ({productId, enabled = false}) => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    })
+    });
   };
 
   const onSuccessAddProduct = () => {
@@ -79,7 +79,7 @@ const useProducts = ({productId, enabled = false}) => {
     formData.append('title', product.title);
     formData.append('description', product.description);
     formData.append('price', product.price);
-    formData.append('location', JSON.stringify({"name": "Dummy Place", "longitude": 35.12345, "latitude": 33.56789}));
+    formData.append('location', JSON.stringify({'name': 'Dummy Place', 'longitude': 35.12345, 'latitude': 33.56789}));
 
     if (product.images) {
       const image = {
@@ -95,7 +95,7 @@ const useProducts = ({productId, enabled = false}) => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    })
+    });
   };
 
   const onSuccessEditProduct = () => {

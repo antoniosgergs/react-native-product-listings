@@ -40,16 +40,16 @@ const useProfile = () => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    })
-  }
+    });
+  };
 
   const onSuccessUpdateUserFn = () => {
     Alert.alert('User updated');
-  }
+  };
 
   const onErrorUpdateUserFn = (error) => {
     Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
-  }
+  };
 
   const updateUserMutation = useMutation({
     mutationFn: updateUserFn,
