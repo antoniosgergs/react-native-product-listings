@@ -3,11 +3,13 @@ import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
 import { normalize } from '../utils/responsive';
 import {useTheme} from '../context/ThemeContext';
 
+const API_URL = 'https://backend-practice.eurisko.me';
+
 const ProductCard = ({ item, onPress }) =>{
   const { colors } = useTheme();
   return(
     <Pressable onPress={onPress} style={styles.card}>
-      <Image source={{ uri: item.images[0].url }} style={styles.image} />
+      <Image source={{ uri: `${API_URL}/${item.images[0].url}` }} style={styles.image} />
       <View style={[styles.infocontainer, { backgroundColor: colors.background }]}>
         <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
         <Text style={[styles.price, { color: colors.text }]}>${item.price}</Text>

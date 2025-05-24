@@ -1,19 +1,54 @@
-import React from 'react';
-import { Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, {useEffect} from 'react';
+import {
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+  Alert,
+  View,
+  ActivityIndicator, Linking,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {fonts} from '../utils/fonts';
 import {useTheme} from '../context/ThemeContext';
+import useProducts from '../hooks/useProducts';
+
+const API_URL = 'https://backend-practice.eurisko.me';
 
 const ProductDetailsScreen = ({ route }) => {
   const { colors } = useTheme();
-  const { product } = route.params;
+  const { productId } = route.params;
+
+  const {getProductByIdQuery} = useProducts({productId});
+  const {isFetching, refetch, isRefetching, isError, data} = getProductByIdQuery;
+
+  const {data: product} = data ?? {};
+
+  useEffect(() => {
+    if(isError){
+      Alert.alert('Error occurred');
+    }
+  },[isError]);
+
+  if(isFetching || isError){
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
-        <Image source={{ uri: product.images[0].url }} style={styles.image} />
-        <Text style={[styles.title, { color: colors.text }]}>{product.title}</Text>
-        <Text style={[styles.price, { color: colors.text }]}>${product.price}</Text>
-        <Text style={[styles.description, { color: colors.text }]}>{product.description}</Text>
+      <ScrollView refreshControl={<RefreshControl onRefresh={refetch} refreshing={isRefetching} />} contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+        <Image source={{ uri: `${API_URL}/${product.images[0].url}` }} style={styles.image} />
+        <Text style={[styles.title, { color: colors.text }]}>{product?.title}</Text>
+        <Text style={[styles.price, { color: colors.text }]}>${product?.price}</Text>
+        <Text style={[styles.description, { color: colors.text }]}>{product?.description}</Text>
+        <TouchableOpacity onPress={() => Linking.openURL(`mailto:${product?.user?.email}`)}>
+          <Text style={[styles.body, { color: colors.text }]}>Press to send email to the owner:{product?.user?.email}</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.buttonContainerShare}>
           <Icon name="share-outline" size={30} color= '#3250CD' />
         </TouchableOpacity>
@@ -39,6 +74,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  body: {
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
   },
