@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
 import {useTheme} from '../context/ThemeContext';
+import useAuth from '../hooks/useAuth';
 
-export default function VerificationScreen() {
+const  VerificationScreen = ({ route })=> {
+  const { email } = route.params;
+
+  const {verifyOtpMutation} = useAuth();
+  const {mutate, isPending} = verifyOtpMutation;
+
   const { colors } = useTheme();
   const [otp, setOtp] = useState('');
 
   const handleVerify = () => {
-    if (otp === '1234') {
-      Alert.alert('Verification successful!');
-    } else {
-      Alert.alert('Invalid OTP');
-    }
+    mutate({email, otp});
   };
 
   return (
@@ -26,10 +28,12 @@ export default function VerificationScreen() {
         value={otp}
         onChangeText={setOtp}
       />
-      <Button title="Verify" onPress={handleVerify} />
+      <Button title={isPending ? 'Loading...' : 'Verify'} onPress={handleVerify} />
     </View>
   );
-}
+};
+
+export default VerificationScreen;
 
 const styles = StyleSheet.create({
   container: {
