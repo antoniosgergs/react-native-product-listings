@@ -7,9 +7,11 @@ import {useNavigation} from '@react-navigation/native';
 
 const useAuth = () =>{
   const navigation = useNavigation();
-  const { setAuth } = useAuthStore();
+  const { setAuth,setEmail } = useAuthStore();
 
   const loginFn = async ({email, password}) => {
+    setEmail({email});
+
     return await client().post(loginApi, {
       email: email,
       password: password,

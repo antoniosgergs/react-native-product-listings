@@ -8,23 +8,29 @@ import {
   RefreshControl,
   Alert,
   View,
-  ActivityIndicator, Linking,
+  ActivityIndicator, Linking, Button,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import {fonts} from '../utils/fonts';
 import {useTheme} from '../context/ThemeContext';
 import useProducts from '../hooks/useProducts';
+import useAuthStore from '../store/authStore';
 
 const API_URL = 'https://backend-practice.eurisko.me';
 
 const ProductDetailsScreen = ({ route }) => {
   const { colors } = useTheme();
   const { productId } = route.params;
-
-  const {getProductByIdQuery} = useProducts({productId});
+  const email = useAuthStore((state) => state.email);
+  const {getProductByIdQuery, deleteProductMutation} = useProducts({productId});
   const {isFetching, refetch, isRefetching, isError, data} = getProductByIdQuery;
 
   const {data: product} = data ?? {};
+
+  const isProductOwner = email === product?.user?.email;
+
+  const deleteProduct = () => {
+    deleteProductMutation.mutate();
+  };
 
   useEffect(() => {
     if(isError){
@@ -49,12 +55,13 @@ const ProductDetailsScreen = ({ route }) => {
         <TouchableOpacity onPress={() => Linking.openURL(`mailto:${product?.user?.email}`)}>
           <Text style={[styles.body, { color: colors.text }]}>Press to send email to the owner:{product?.user?.email}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonContainerShare}>
-          <Icon name="share-outline" size={30} color= '#3250CD' />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonContainerAddToList}>
-          <Icon name="bag-add-outline" size={30} color="#3250CD" />
-        </TouchableOpacity>
+
+        {isProductOwner ?
+          <View syle={styles.button}>
+            <Button title={deleteProductMutation.isPending ? 'Loading...' : 'Delete product'} onPress={deleteProduct} />
+          </View>
+          : null}
+
       </ScrollView>
   );
 };
@@ -94,16 +101,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.Light,
     marginBottom: 24,
   },
-  buttonContainerShare: {
-    position: 'absolute',
-    bottom:-50,
-    left: 16,
-    marginLeft: 16,
-  },
-  buttonContainerAddToList: {
-    position: 'absolute',
-    bottom:-50,
-    right: 16,
-    marginRight: 16,
-  },
+  button: {
+    marginTop: 70,
+  }
 });

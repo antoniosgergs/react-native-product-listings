@@ -73,7 +73,65 @@ const useProducts = ({productId, enabled = false}) => {
     onError: onErrorAddProduct,
   });
 
-  return {getProductsQuery, getProductByIdQuery, addProductMutation};
+  const editProductFn = async (product, id) => {
+    const formData = new FormData();
+
+    formData.append('title', product.title);
+    formData.append('description', product.description);
+    formData.append('price', product.price);
+    formData.append('location', JSON.stringify({"name": "Dummy Place", "longitude": 35.12345, "latitude": 33.56789}));
+
+    if (product.images) {
+      const image = {
+        uri: product.images.uri,
+        type: product.images.type,
+        name: product.images.fileName,
+      };
+
+      formData.append('images', image);
+    }
+
+    return await client().put(`${productsApi}/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  };
+
+  const onSuccessEditProduct = () => {
+    Alert.alert('Product edited successfully');
+  };
+
+  const onErrorEditProduct = (error) => {
+    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+  };
+
+  const editProductMutation = useMutation({
+    mutationFn: editProductFn,
+    onSuccess: onSuccessEditProduct,
+    onError: onErrorEditProduct,
+  });
+
+  const deleteProductFn = async (id) => {
+    return await client().delete(`${productsApi}/${id}`);
+  };
+
+  const onSuccessDeleteProduct = () => {
+    Alert.alert('Product deleted successfully');
+  };
+
+  const onErrorDeleteProduct = (error) => {
+    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+  };
+
+  const deleteProductMutation = useMutation({
+    mutationFn: deleteProductFn,
+    onSuccess: onSuccessDeleteProduct,
+    onError: onErrorDeleteProduct,
+  });
+
+
+  return {getProductsQuery, getProductByIdQuery, addProductMutation,editProductMutation,deleteProductMutation};
 };
 
 export default useProducts;

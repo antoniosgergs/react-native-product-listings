@@ -2,11 +2,28 @@ import ProductListScreen from '../screens/ProductListScreen';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Text, TouchableOpacity} from 'react-native';
 import UserProfile from '../screens/UserProfile';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => (
-  <Tab.Navigator>
+  <Tab.Navigator
+    screenOptions={({ route }) => ({
+      tabBarIcon: ({ focused, color, size }) => {
+        let iconName;
+
+        if (route.name === 'Products') {
+          iconName = focused ? 'list' : 'list-outline';
+        } else if (route.name === 'UserProfile') {
+          iconName = focused ? 'person' : 'person-outline';
+        }
+
+        return <Ionicons name={iconName} size={size} color={color} />;
+      },
+      tabBarActiveTintColor: '#007bff',
+      tabBarInactiveTintColor: 'gray',
+    })}
+  >
     <Tab.Screen
       component={ProductListScreen}
       name={'Products'}
