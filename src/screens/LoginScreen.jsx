@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, TextInput, Button,Switch, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button,Switch, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useNavigation } from '@react-navigation/native';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '../context/AuthContext';
+import useAuth from '../hooks/useAuth';
 import { normalize } from '../utils/responsive';
 import { useTheme } from '../context/ThemeContext';
 
@@ -19,7 +19,8 @@ export default function LoginScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { colors } = useTheme();
   const navigation = useNavigation();
-  const { login } = useAuth();
+  const {loginMutation} = useAuth();
+  const {mutate, isPending} = loginMutation;
 
   const {
     handleSubmit,
@@ -30,10 +31,7 @@ export default function LoginScreen() {
   });
 
   const onSubmit = ({ email, password }) => {
-    const success = login(email, password);
-    if (!success) {
-      Alert.alert('Invalid Credentials');
-    }
+    mutate({email, password});
   };
 
   return (
@@ -63,7 +61,7 @@ export default function LoginScreen() {
         />
         {errors.password && <Text style={[styles.error, { color: 'red' }]}>{errors.password.message}</Text>}
 
-        <Button title="Login" onPress={handleSubmit(onSubmit)} />
+        <Button title={isPending ? 'Loading...' : 'Login'} onPress={handleSubmit(onSubmit)} />
         <View style={styles.link}>
           <Text style={{ color: colors.text }} onPress={() => navigation.navigate('SignUp')}>
             Don't have an account? Sign Up

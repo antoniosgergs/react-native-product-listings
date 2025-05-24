@@ -3,20 +3,21 @@ import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigation } from '@react-navigation/native';
+import useAuth from '../hooks/useAuth';
 import { normalize } from '../utils/responsive';
 import {useTheme} from '../context/ThemeContext';
 
 const schema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  phone: z.string().min(10, 'Phone number is required'),
 });
 
 export default function SignUpScreen() {
   const { colors } = useTheme();
-  const navigation = useNavigation();
+  const {signUpMutation} = useAuth();
+  const {mutate, isPending} = signUpMutation;
 
   const {
     handleSubmit,
@@ -26,16 +27,19 @@ export default function SignUpScreen() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = () => {
-    navigation.navigate('Verification');
+  const onSubmit = ({firstName, lastName, email, password}) => {
+    mutate({firstName, lastName, email, password});
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text }]}>Sign Up</Text>
 
-      <TextInput placeholder="Name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('name', text)} />
-      {errors.name && <Text style={styles.error}>{errors.name.message}</Text>}
+      <TextInput placeholder="First name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('firstName', text)} />
+      {errors.firstName && <Text style={styles.error}>{errors.firstName.message}</Text>}
+
+      <TextInput placeholder="Last name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('lastName', text)} />
+      {errors.lastName && <Text style={styles.error}>{errors.lastName.message}</Text>}
 
       <TextInput placeholder="Email" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('email', text)} />
       {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
@@ -49,10 +53,8 @@ export default function SignUpScreen() {
       />
       {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
 
-      <TextInput placeholder="Phone" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('phone', text)} />
-      {errors.phone && <Text style={styles.error}>{errors.phone.message}</Text>}
 
-      <Button title="Sign Up" onPress={handleSubmit(onSubmit)} />
+      <Button title={isPending ? 'Loading...' : 'Sign Up'} onPress={handleSubmit(onSubmit)} />
     </View>
   );
 }
