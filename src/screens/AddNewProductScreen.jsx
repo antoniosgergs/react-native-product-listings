@@ -1,5 +1,17 @@
-import {Button, Image, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
-import React, {useEffect} from 'react';
+import {
+  ActivityIndicator,
+  Button,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, {useCallback, useEffect, useLayoutEffect} from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useNavigation} from '@react-navigation/native';
 import {useTheme} from '../context/ThemeContext';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -21,6 +33,7 @@ const schema = z.object({
 
 const AddNewProductScreen = () =>{
   const { colors } = useTheme();
+  const navigation = useNavigation();
   const {addProductMutation} = useProducts({enabled:false});
   const {mutate, isSuccess, isPending} = addProductMutation;
 
@@ -40,9 +53,28 @@ const AddNewProductScreen = () =>{
     }
   },[isSuccess, reset]);
 
-  const onSubmit = ({title, description, price, images}) => {
+  const onSubmit = useCallback(({title, description, price, images}) => {
     mutate({title, description, price,images});
-  };
+  }, [mutate]);
+
+  useLayoutEffect(() => {
+    const getHeaderRight = () => {
+      if(isPending) {
+        return <ActivityIndicator />;
+      }
+      else {
+        return (
+          <TouchableOpacity onPress={handleSubmit(onSubmit)}>
+            <Ionicons name={'save-outline'} size={36} />
+          </TouchableOpacity>
+        );
+      }
+    };
+
+    navigation.setOptions({
+      headerRight: getHeaderRight,
+    });
+  }, [navigation, handleSubmit, onSubmit, isPending]);
 
   const addProductImage = async () => {
     try {
@@ -75,8 +107,6 @@ const AddNewProductScreen = () =>{
       <View style={styles.button}>
         <Button title={'Add image'} onPress={addProductImage} />
       </View>
-
-      <Button title={isPending ? 'Loading...' : 'Save'} onPress={handleSubmit(onSubmit)} />
     </ScrollView>
   );
 };

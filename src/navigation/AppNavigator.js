@@ -11,9 +11,18 @@ import AddNewProductScreen from '../screens/AddNewProductScreen';
 import {useTheme} from '../context/ThemeContext';
 import {MyLightTheme, MyDarkTheme} from '../utils/theme';
 import TabNavigator from './TabNavigator';
-
+import {APP_PREFIXES} from '../utils/constants';
 
 const Stack = createNativeStackNavigator();
+
+const linking = {
+  prefixes: APP_PREFIXES,
+  config: {
+    screens: {
+      ProductDetails: 'product/:productId',
+    },
+  },
+};
 
 const AppNavigator = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -21,11 +30,11 @@ const AppNavigator = () => {
   const { isDarkMode } = useTheme();
 
   return (
-    <NavigationContainer theme={isDarkMode ? MyDarkTheme : MyLightTheme}>
+    <NavigationContainer linking={linking} theme={isDarkMode ? MyDarkTheme : MyLightTheme}>
       <Stack.Navigator>
         {accessToken ? (
           <>
-            <Stack.Screen name={'Home'} component={TabNavigator} options={{headerShown: false}} />
+            <Stack.Screen name="Home" component={TabNavigator} options={{headerShown: false}} />
             <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{title: 'Product details'}} />
             <Stack.Screen name="AddNewProduct" component={AddNewProductScreen} options={{title: 'Add new product'}} />
           </>

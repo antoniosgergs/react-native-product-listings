@@ -1,24 +1,32 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect} from 'react';
+import Animated from 'react-native-reanimated';
+import Skeleton from 'react-native-reanimated-skeleton';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import {
   Text,
-  Image,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
   RefreshControl,
   Alert,
   View,
-  ActivityIndicator, Linking, Button,
+  Linking,
+  Button,
+  Share,
 } from 'react-native';
 import {fonts} from '../utils/fonts';
 import {useTheme} from '../context/ThemeContext';
 import useProducts from '../hooks/useProducts';
 import useAuthStore from '../store/authStore';
+import {APP_PREFIX} from '../utils/constants';
 
 const API_URL = 'https://backend-practice.eurisko.me';
 
-const ProductDetailsScreen = ({ route }) => {
+const ProductDetailsScreen = () => {
   const { colors } = useTheme();
+  const route = useRoute();
+  const navigation = useNavigation();
   const { productId } = route.params;
   const email = useAuthStore((state) => state.email);
   const {getProductByIdQuery, deleteProductMutation} = useProducts({productId});
@@ -32,36 +40,62 @@ const ProductDetailsScreen = ({ route }) => {
     deleteProductMutation.mutate();
   };
 
+  const productTitle = product?.title;
+
+  const handleShare = useCallback(() => {
+    const url = `${APP_PREFIX}product/${productId}`;
+
+    Share.share({
+      url,
+      title: productTitle,
+      message: `Hello check this product: ${url}`,
+    });
+  }, [productTitle, productId]);
+
+
+  useLayoutEffect(() => {
+    const getHeaderRight = () => (
+      <TouchableOpacity onPress={handleShare}>
+        <Ionicons name={'share-outline'} size={36} />
+      </TouchableOpacity>
+    );
+
+    navigation.setOptions({
+      headerRight: getHeaderRight,
+    });
+  }, [navigation, handleShare]);
+
   useEffect(() => {
     if(isError){
       Alert.alert('Error occurred');
     }
   },[isError]);
 
-  if(isFetching || isError){
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
   return (
       <ScrollView refreshControl={<RefreshControl onRefresh={refetch} refreshing={isRefetching} />} contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
-        <Image source={{ uri: `${API_URL}/${product.images[0].url}` }} style={styles.image} />
-        <Text style={[styles.title, { color: colors.text }]}>{product?.title}</Text>
-        <Text style={[styles.price, { color: colors.text }]}>${product?.price}</Text>
-        <Text style={[styles.description, { color: colors.text }]}>{product?.description}</Text>
-        <TouchableOpacity onPress={() => Linking.openURL(`mailto:${product?.user?.email}`)}>
-          <Text style={[styles.body, { color: colors.text }]}>Press to send email to the owner:{product?.user?.email}</Text>
-        </TouchableOpacity>
+        <Skeleton
+          isLoading={isFetching}
+          containerStyle={styles.skeleton}
+          layout={[
+            { key: 'image', ...styles.image },
+            { key: 'title', ...styles.title, height: 20, width: 220, margin: 6 },
+            { key: 'price', ...styles.price, height: 20, width: 220, margin: 6 },
+            { key: 'email', ...styles.price, height: 20, width: 220, margin: 6 },
+          ]}>
+            <Animated.Image source={{ uri: `${API_URL}/${product?.images[0].url}` }} style={styles.image} sharedTransitionTag="tag" />
+            <Text style={[styles.title, { color: colors.text }]}>{productTitle}</Text>
+            <Text style={[styles.price, { color: colors.text }]}>${product?.price}</Text>
+            <Text style={[styles.description, { color: colors.text }]}>{product?.description}</Text>
+            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${product?.user?.email}`)}>
+              <Text style={[styles.body, { color: colors.text }]}>Press to send email to the owner:{product?.user?.email}</Text>
+            </TouchableOpacity>
 
-        {isProductOwner ?
-          <View syle={styles.button}>
-            <Button title={deleteProductMutation.isPending ? 'Loading...' : 'Delete product'} onPress={deleteProduct} />
-          </View>
-          : null}
-
+            {isProductOwner ?
+              <View syle={styles.button}>
+                <Button title={deleteProductMutation.isPending ? 'Loading...' : 'Delete product'} onPress={deleteProduct} />
+              </View>
+              : null}
+        </Skeleton>
       </ScrollView>
   );
 };
@@ -69,6 +103,9 @@ const ProductDetailsScreen = ({ route }) => {
 export default ProductDetailsScreen;
 
 const styles = StyleSheet.create({
+  skeleton: {
+    flex: 1,
+  },
   container: {
     padding: 16,
   },
