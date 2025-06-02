@@ -1,5 +1,17 @@
-import {ActivityIndicator, Button, Image, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
-import React, {useEffect} from 'react';
+import {
+  ActivityIndicator,
+  Button,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, {useCallback, useEffect, useLayoutEffect} from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useNavigation} from '@react-navigation/native';
 import {useTheme} from '../context/ThemeContext';
 import useAuthStore from '../store/authStore';
 import useProfile from '../hooks/useProfile';
@@ -26,15 +38,16 @@ const schema = z.object({
 const UserProfile = () => {
   const { colors } = useTheme();
   const { clearAuth } = useAuthStore();
+  const navigation = useNavigation();
 
   const {getUserQuery,updateUserMutation} = useProfile();
   const {isPending, data} = getUserQuery;
   const {mutate} = updateUserMutation;
   const {data: user} = data ?? {};
 
-  const onLogout = () => {
+  const onLogout = useCallback(() => {
     clearAuth();
-  };
+  }, [clearAuth]);
 
   const {
     handleSubmit,
@@ -73,9 +86,28 @@ const UserProfile = () => {
     }
   }, [user,reset]);
 
-  const onSubmit = ({firstName, lastName,newProfileImage}) => {
+  const onSubmit = useCallback(({firstName, lastName,newProfileImage}) => {
     mutate({firstName, lastName,profileImage:newProfileImage});
-  };
+  }, [mutate]);
+
+  useLayoutEffect(() => {
+    const getHeaderRight = () => (
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onLogout}>
+          <Ionicons name={'log-out-outline'} size={36} />
+        </TouchableOpacity>
+        {updateUserMutation.isPending ? <ActivityIndicator/> : (
+          <TouchableOpacity onPress={handleSubmit(onSubmit)}>
+            <Ionicons name={'save-outline'} size={36} />
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+
+    navigation.setOptions({
+      headerRight: getHeaderRight,
+    });
+  }, [handleSubmit, navigation, onLogout, onSubmit, updateUserMutation.isPending]);
 
   const addUserImageFromGallery = async () => {
     try {
@@ -111,12 +143,6 @@ const UserProfile = () => {
        <View style={styles.button}>
          <Button title={'Add profile image from gallery'} onPress={addUserImageFromGallery} />
        </View>
-
-       <View style={styles.button}>
-         <Button title={updateUserMutation.isPending ? 'Loading...' : 'Update profile'} onPress={handleSubmit(onSubmit)} />
-       </View>
-
-       <Button title={'Logout'} onPress={onLogout} />
      </ScrollView>
    );
 };
@@ -125,6 +151,11 @@ const UserProfile = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: normalize(24),

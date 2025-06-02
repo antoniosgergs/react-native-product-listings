@@ -1,20 +1,31 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Skeleton from 'react-native-reanimated-skeleton';
 import { normalize } from '../utils/responsive';
 import {useTheme} from '../context/ThemeContext';
 
 const API_URL = 'https://backend-practice.eurisko.me';
 
-const ProductCard = ({ item, onPress }) =>{
+const ProductCard = ({ item, onPress, isLoading }) =>{
   const { colors } = useTheme();
   return(
-    <Pressable onPress={onPress} style={styles.card}>
-      <Image source={{ uri: `${API_URL}/${item.images[0].url}` }} style={styles.image} />
-      <View style={[styles.infocontainer, { backgroundColor: colors.background }]}>
-        <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-        <Text style={[styles.price, { color: colors.text }]}>${item.price}</Text>
-      </View>
-    </Pressable>
+    <Skeleton
+      isLoading={isLoading}
+      containerStyle={styles.card}
+      layout={[
+      { key: 'image', ...styles.image },
+      { key: 'title', ...styles.title, height: 20, width: 220, margin: 6 },
+      { key: 'price', ...styles.price, height: 20, width: 220, margin: 6 },
+    ]}>
+      <Pressable onPress={onPress}>
+        <Animated.Image source={{ uri: `${API_URL}/${item?.images[0].url}` }} style={styles.image} sharedTransitionTag="tag" />
+        <View style={[styles.info, { backgroundColor: colors.background }]}>
+          <Text style={[styles.title, { color: colors.text }]}>{item?.title}</Text>
+          <Text style={[styles.price, { color: colors.text }]}>${item?.price}</Text>
+        </View>
+      </Pressable>
+    </Skeleton>
   );
 };
 
@@ -42,11 +53,6 @@ const styles = StyleSheet.create({
     fontSize: normalize(18),
     fontWeight: 'bold',
     marginBottom: normalize(6),
-  },
-  description: {
-    fontSize: normalize(14),
-    color: '#555',
-    marginBottom: normalize(8),
   },
   price: {
     fontSize: normalize(16),

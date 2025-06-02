@@ -14,24 +14,31 @@ export default function ProductListScreen() {
 
   const products = data?.pages[0]?.data ?? {};
 
-  const refreshing = isFetching || isRefetching;
-
   useEffect(() => {
     if(isError){
       Alert.alert('Error occurred');
     }
   },[isError]);
 
+  if (isFetching) {
+    return (
+      <View style={styles.container}>
+        <ProductCard isLoading />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
         <FlatList
           style={[styles.container, { backgroundColor: colors.background }]}
           data={products}
-          refreshControl={<RefreshControl onRefresh={refetch} refreshing={refreshing} />}
+          refreshControl={<RefreshControl onRefresh={refetch} refreshing={isRefetching} />}
           keyExtractor={(item) => item._id}
           ListEmptyComponent={<Text>No products found</Text>}
           renderItem={({ item }) => (
             <ProductCard
+              isLoading={false}
               item={item}
              onPress={() =>  navigation.navigate('ProductDetails',
                {
