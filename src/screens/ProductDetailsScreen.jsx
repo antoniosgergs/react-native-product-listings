@@ -9,32 +9,37 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
-  Alert,
   View,
   Linking,
   Button,
   Share,
 } from 'react-native';
+import Snackbar from 'react-native-snackbar';
 import {fonts} from '../utils/fonts';
 import {useTheme} from '../context/ThemeContext';
 import useProducts from '../hooks/useProducts';
 import useAuthStore from '../store/authStore';
-import {APP_PREFIX} from '../utils/constants';
-
-const API_URL = 'https://backend-practice.eurisko.me';
+import {API_URL, APP_PREFIX} from '../utils/constants';
+import Counter from '../components/molecules/Counter';
+import useShoppingCart from '../store/shoppingCart';
 
 const ProductDetailsScreen = () => {
   const { colors } = useTheme();
   const route = useRoute();
   const navigation = useNavigation();
   const { productId } = route.params;
-  const email = useAuthStore((state) => state.email);
+  const {email} = useAuthStore();
   const {getProductByIdQuery, deleteProductMutation} = useProducts({productId});
   const {isFetching, refetch, isRefetching, isError, data} = getProductByIdQuery;
 
   const {data: product} = data ?? {};
 
   const isProductOwner = email === product?.user?.email;
+
+  const { shoppingCart, removeItemFromShoppingCart, addItemToShoppingCart } = useShoppingCart();
+  const onIncrementCount = () => addItemToShoppingCart({product});
+  const onDecreaseCount = () => removeItemFromShoppingCart({product});
+  const count = shoppingCart.find((val) => val._id === product?._id)?.count ?? 0;
 
   const deleteProduct = () => {
     deleteProductMutation.mutate();
@@ -67,7 +72,10 @@ const ProductDetailsScreen = () => {
 
   useEffect(() => {
     if(isError){
-      Alert.alert('Error occurred');
+      Snackbar.show({
+        text: 'Error occurred',
+        textColor: 'red',
+      });
     }
   },[isError]);
 
@@ -89,6 +97,9 @@ const ProductDetailsScreen = () => {
             <TouchableOpacity onPress={() => Linking.openURL(`mailto:${product?.user?.email}`)}>
               <Text style={[styles.body, { color: colors.text }]}>Press to send email to the owner:{product?.user?.email}</Text>
             </TouchableOpacity>
+            <View style={styles.counter}>
+              <Counter count={count} onIncrementCount={onIncrementCount} onDecreaseCount={onDecreaseCount} />
+            </View>
 
             {isProductOwner ?
               <View syle={styles.button}>
@@ -140,5 +151,9 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 70,
+  },
+  counter: {
+    marginTop: 16,
+    width: '30%',
   },
 });
