@@ -1,10 +1,13 @@
 import {useInfiniteQuery, useMutation, useQuery} from '@tanstack/react-query';
+import Snackbar from 'react-native-snackbar';
+import {useNavigation} from '@react-navigation/native';
 import client from '../api/client';
 import {productsApi} from '../api/productsApi';
-import {Alert} from 'react-native';
 import {queryClient} from '../api/queryClient';
 
 const useProducts = ({productId, enabled = false}) => {
+  const navigation = useNavigation();
+
   const getProducts = async (pageParam = 1) => {
     const result = await client().get(`${productsApi}?page=${pageParam}`);
     return result.data;
@@ -59,12 +62,21 @@ const useProducts = ({productId, enabled = false}) => {
   };
 
   const onSuccessAddProduct = () => {
+    navigation.navigate('Home');
+
     queryClient.invalidateQueries(['products']);
-    Alert.alert('Product added successfully');
+
+    Snackbar.show({
+      text: 'Product added successfully',
+      textColor: 'green',
+    });
   };
 
   const onErrorAddProduct = (error) => {
-    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const addProductMutation = useMutation({
@@ -99,11 +111,17 @@ const useProducts = ({productId, enabled = false}) => {
   };
 
   const onSuccessEditProduct = () => {
-    Alert.alert('Product edited successfully');
+    Snackbar.show({
+      text: 'Product edited successfully',
+      textColor: 'green',
+    });
   };
 
   const onErrorEditProduct = (error) => {
-    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const editProductMutation = useMutation({
@@ -117,11 +135,17 @@ const useProducts = ({productId, enabled = false}) => {
   };
 
   const onSuccessDeleteProduct = () => {
-    Alert.alert('Product deleted successfully');
+    Snackbar.show({
+      text: 'Product deleted successfully',
+      textColor: 'green',
+    });
   };
 
   const onErrorDeleteProduct = (error) => {
-    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const deleteProductMutation = useMutation({

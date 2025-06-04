@@ -1,11 +1,11 @@
 import {useMutation, useQuery} from '@tanstack/react-query';
+import Snackbar from 'react-native-snackbar';
 import client from '../api/client';
 import {userApi} from '../api/user';
 import useAuthStore from '../store/authStore';
-import {Alert} from 'react-native';
 
 const useProfile = () => {
-  const email = useAuthStore((state) => state.email);
+  const {email} = useAuthStore();
 
   const getUser = async () => {
     const result = await client().get(userApi, {
@@ -44,11 +44,17 @@ const useProfile = () => {
   };
 
   const onSuccessUpdateUserFn = () => {
-    Alert.alert('User updated');
+    Snackbar.show({
+      text: 'User updated',
+      textColor: 'green',
+    });
   };
 
   const onErrorUpdateUserFn = (error) => {
-    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const updateUserMutation = useMutation({

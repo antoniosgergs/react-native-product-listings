@@ -12,16 +12,16 @@ import {
 import React, {useCallback, useEffect, useLayoutEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
+import crashlytics from '@react-native-firebase/crashlytics';
 import {useTheme} from '../context/ThemeContext';
-import useAuthStore from '../store/authStore';
+import useAuth from '../hooks/useAuth';
 import useProfile from '../hooks/useProfile';
 import {normalize} from '../utils/responsive';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {z} from 'zod';
-
-const API_URL = 'https://backend-practice.eurisko.me';
+import {API_URL} from '../utils/constants';
 
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -37,17 +37,13 @@ const schema = z.object({
 
 const UserProfile = () => {
   const { colors } = useTheme();
-  const { clearAuth } = useAuthStore();
+  const {onLogout} = useAuth();
   const navigation = useNavigation();
 
   const {getUserQuery,updateUserMutation} = useProfile();
   const {isPending, data} = getUserQuery;
   const {mutate} = updateUserMutation;
   const {data: user} = data ?? {};
-
-  const onLogout = useCallback(() => {
-    clearAuth();
-  }, [clearAuth]);
 
   const {
     handleSubmit,
@@ -90,13 +86,15 @@ const UserProfile = () => {
     mutate({firstName, lastName,profileImage:newProfileImage});
   }, [mutate]);
 
+  const isLoadingUpdate = updateUserMutation.isPending;
+
   useLayoutEffect(() => {
     const getHeaderRight = () => (
       <View style={styles.header}>
         <TouchableOpacity onPress={onLogout}>
           <Ionicons name={'log-out-outline'} size={36} />
         </TouchableOpacity>
-        {updateUserMutation.isPending ? <ActivityIndicator/> : (
+        {isLoadingUpdate ? <ActivityIndicator/> : (
           <TouchableOpacity onPress={handleSubmit(onSubmit)}>
             <Ionicons name={'save-outline'} size={36} />
           </TouchableOpacity>
@@ -107,7 +105,7 @@ const UserProfile = () => {
     navigation.setOptions({
       headerRight: getHeaderRight,
     });
-  }, [handleSubmit, navigation, onLogout, onSubmit, updateUserMutation.isPending]);
+  }, [handleSubmit, navigation, onLogout, onSubmit, isLoadingUpdate]);
 
   const addUserImageFromGallery = async () => {
     try {
@@ -117,7 +115,8 @@ const UserProfile = () => {
       });
 
       setValue('newProfileImage', result?.assets?.[0]);
-    } catch {
+    } catch (error) {
+      crashlytics().recordError(error);
     }
   };
 
