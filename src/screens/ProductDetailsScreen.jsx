@@ -37,8 +37,8 @@ const ProductDetailsScreen = () => {
   const isProductOwner = email === product?.user?.email;
 
   const { shoppingCart, removeItemFromShoppingCart, addItemToShoppingCart } = useShoppingCart();
-  const onIncrementCount = () => addItemToShoppingCart({product});
-  const onDecreaseCount = () => removeItemFromShoppingCart({product});
+  const onIncrementCount = () => addItemToShoppingCart({item:product});
+  const onDecreaseCount = () => removeItemFromShoppingCart({item:product});
   const count = shoppingCart.find((val) => val._id === product?._id)?.count ?? 0;
 
   const deleteProduct = () => {
