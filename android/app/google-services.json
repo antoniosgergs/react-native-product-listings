@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1031823450763",
+    "project_id": "antonios-product-listing",
+    "storage_bucket": "antonios-product-listing.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031823450763:android:b63f2f25e7cf6384926a8e",
+        "android_client_info": {
+          "package_name": "com.antonios.productlisting"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3-cw2IZ6XhGTKz3sEtx2ouofPZ-89TTI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
