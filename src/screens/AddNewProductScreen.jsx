@@ -12,6 +12,7 @@ import {
 import React, {useCallback, useEffect, useLayoutEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
+import crashlytics from '@react-native-firebase/crashlytics';
 import {useTheme} from '../context/ThemeContext';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -85,7 +86,8 @@ const AddNewProductScreen = () =>{
 
 
       setValue('images', result?.assets?.[0]);
-    } catch {
+    } catch (error) {
+      crashlytics().recordError(error);
     }
   };
 
