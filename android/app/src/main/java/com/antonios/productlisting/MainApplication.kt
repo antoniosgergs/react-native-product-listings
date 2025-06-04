@@ -1,4 +1,4 @@
-package com.awesomeproject
+package com.antonios.productlisting
 
 import android.app.Application
 import com.facebook.react.PackageList
