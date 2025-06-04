@@ -1,7 +1,7 @@
 import axios from 'axios';
-import useAuthStore from '../store/authStore';
-
-const API_URL = 'https://backend-practice.eurisko.me';
+import crashlytics from '@react-native-firebase/crashlytics';
+import {storage} from '../utils/mmkv';
+import {API_URL} from '../utils/constants';
 
 const client = () => {
   const axiosInstance = axios.create({baseURL: API_URL,
@@ -13,7 +13,7 @@ const client = () => {
   axiosInstance.interceptors.request.use(
     async config => {
       try {
-        const { accessToken } = useAuthStore.getState();
+        const accessToken = storage.getString('accessToken');
 
         if (accessToken) {
           config.headers.Authorization = `Bearer ${accessToken}`;
@@ -21,10 +21,12 @@ const client = () => {
 
         return config;
       } catch (error) {
+        crashlytics().recordError(error);
         return Promise.reject(error);
       }
     },
     error => {
+      crashlytics().recordError(error);
       return Promise.reject(error);
     },
   );

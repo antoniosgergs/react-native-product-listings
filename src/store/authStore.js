@@ -2,15 +2,13 @@ import { create } from 'zustand';
 
 const useAuthStore = create(
       (set) => ({
-          accessToken: null,
+          isLoggedIn:false,
           expiresIn: null,
           email: null,
-          setAuth: ({ accessToken, expiresIn }) =>
-              set({ accessToken, expiresIn }),
-          setEmail: ({ email }) =>
-          set({ email }),
-          clearAuth: () => set({ accessToken: null, expiresIn: null }),
-          clearEmail: () => set({ email:null }),
+          setAuth: ({ expiresIn, isLoggedIn }) => set({ expiresIn, isLoggedIn }),
+          setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
+          setEmail: ({ email }) => set({ email }),
+          clearAuth: () => set({ expiresIn: null, email: null, isLoggedIn:false }),
       })
 );
 

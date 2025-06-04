@@ -1,32 +1,52 @@
 import {useMutation} from '@tanstack/react-query';
+import {useCallback} from 'react';
+import Snackbar from 'react-native-snackbar';
+import {useNavigation} from '@react-navigation/native';
+import crashlytics from '@react-native-firebase/crashlytics';
 import useAuthStore from '../store/authStore';
 import {loginApi, signUpApi, verifyOtpApi} from '../api/authApis';
 import client from '../api/client';
-import {Alert} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {storage} from '../utils/mmkv';
 
 const useAuth = () =>{
   const navigation = useNavigation();
-  const { setAuth,setEmail } = useAuthStore();
+  const { setAuth, setEmail, clearAuth } = useAuthStore();
 
   const loginFn = async ({email, password}) => {
     setEmail({email});
 
-    return await client().post(loginApi, {
-      email: email,
-      password: password,
-      token_expires_in: '1y',
-    });
+   return {
+     email,
+      result: await client().post(loginApi, {
+        email: email,
+        password: password,
+        token_expires_in: '1y',
+      }),
+    };
   };
 
-  const onSuccessLogin = (data) => {
-    const { accessToken, expiresIn  } = data?.data?.data ?? {};
+  const onSuccessLogin = async ({email, result}) => {
+    crashlytics().log('User signed in.');
+    const {accessToken, expiresIn} = result?.data?.data ?? {};
 
-    setAuth({accessToken, expiresIn });
+    storage.set('accessToken', accessToken);
+
+    try {
+      await crashlytics().setAttributes({
+        email,
+      });
+    } catch (error) {
+      crashlytics().recordError(error);
+    }
+
+    setAuth({expiresIn, isLoggedIn: true});
   };
 
   const onErrorLogin = (error) => {
-    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const loginMutation = useMutation({
@@ -59,8 +79,11 @@ const useAuth = () =>{
     });
   };
 
-  const onErrorSignUp = (data) => {
-    Alert.alert(data?.response?.data?.error?.message || 'Error occurred');
+  const onErrorSignUp = (error) => {
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const signUpMutation = useMutation({
@@ -81,7 +104,10 @@ const useAuth = () =>{
   };
 
   const onErrorVerifyOtp = (error) =>{
-    Alert.alert(error?.response?.data?.error?.message || 'Error occurred');
+    Snackbar.show({
+      text: error?.response?.data?.error?.message || 'Error occurred',
+      textColor: 'red',
+    });
   };
 
   const verifyOtpMutation = useMutation({
@@ -90,7 +116,12 @@ const useAuth = () =>{
     onError: onErrorVerifyOtp,
   });
 
-  return {loginMutation, signUpMutation, verifyOtpMutation};
+  const onLogout = useCallback(() => {
+    crashlytics().log('User logged out.');
+    clearAuth();
+  }, [clearAuth]);
+
+  return {loginMutation, signUpMutation, verifyOtpMutation, onLogout};
 };
 
 export default useAuth;

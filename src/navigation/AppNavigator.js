@@ -1,7 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { NavigationContainer} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import useAuthStore from '../store/authStore';
 
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
@@ -12,6 +11,8 @@ import {useTheme} from '../context/ThemeContext';
 import {MyLightTheme, MyDarkTheme} from '../utils/theme';
 import TabNavigator from './TabNavigator';
 import {APP_PREFIXES} from '../utils/constants';
+import {storage} from '../utils/mmkv';
+import useAuthStore from '../store/authStore';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,14 +26,20 @@ const linking = {
 };
 
 const AppNavigator = () => {
-  const accessToken = useAuthStore((state) => state.accessToken);
-
+  const {isLoggedIn,setIsLoggedIn } = useAuthStore();
+  const accessToken = storage.getString('accessToken');
   const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    if(accessToken && !isLoggedIn){
+      setIsLoggedIn(true);
+    }
+  },[accessToken, isLoggedIn, setIsLoggedIn]);
 
   return (
     <NavigationContainer linking={linking} theme={isDarkMode ? MyDarkTheme : MyLightTheme}>
       <Stack.Navigator>
-        {accessToken ? (
+        {isLoggedIn ? (
           <>
             <Stack.Screen name="Home" component={TabNavigator} options={{headerShown: false}} />
             <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{title: 'Product details'}} />
