@@ -107,7 +107,7 @@ const ProductDetailsScreen = () => {
   const keyExtractor = (item) => item._id;
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onLongPress={onSaveImage(`${API_URL}/${item.url}`)} style={{ width: imageWidth, height: 350, }}>
+    <TouchableOpacity onLongPress={onSaveImage(`${API_URL}/${item.url}`)} style={[styles.imageContainer, { width: imageWidth }]}>
       <Animated.Image source={{ uri: `${API_URL}/${item.url}` }} style={[styles.image, { width: imageWidth }]} sharedTransitionTag="tag" />
     </TouchableOpacity>
   );
@@ -160,9 +160,11 @@ const ProductDetailsScreen = () => {
             }
 
             {isProductOwner &&
-              <Button isLoading={deleteProductMutation.isPending} onPress={deleteProduct}>
-                Delete product
-              </Button>
+              <View style={styles.buttonContainer}>
+                <Button isLoading={deleteProductMutation.isPending} onPress={deleteProduct}>
+                  Delete product
+                </Button>
+              </View>
             }
         </Skeleton>
       </ScrollView>
@@ -177,6 +179,9 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 16,
+  },
+  imageContainer:{
+    height:350,
   },
   image: {
     height: '100%',
@@ -212,6 +217,9 @@ const styles = StyleSheet.create({
   },
   map: {
     width:'100%',
-    height:400
+    height:400,
+  },
+  buttonContainer:{
+    marginTop: 8,
   },
 });

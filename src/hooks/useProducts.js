@@ -98,7 +98,7 @@ const useProducts = ({productId, sortBy, enabled = false}) => {
     onError: onErrorAddProduct,
   });
 
-  const editProductFn = async (product, id) => {
+  const editProductFn = async (product) => {
     const formData = new FormData();
 
     formData.append('title', product.title);
@@ -118,7 +118,7 @@ const useProducts = ({productId, sortBy, enabled = false}) => {
       });
     }
 
-    return await client().put(`${productsApi}/${id}`, formData, {
+    return await client().put(`${productsApi}/${productId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -149,11 +149,15 @@ const useProducts = ({productId, sortBy, enabled = false}) => {
     onError: onErrorEditProduct,
   });
 
-  const deleteProductFn = async (id) => {
-    return await client().delete(`${productsApi}/${id}`);
+  const deleteProductFn = async () => {
+    return await client().delete(`${productsApi}/${productId}`);
   };
 
   const onSuccessDeleteProduct = () => {
+    navigation.navigate('Home');
+
+    queryClient.invalidateQueries(['products']);
+
     Snackbar.show({
       text: 'Product deleted successfully',
       textColor: 'green',
