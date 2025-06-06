@@ -14,7 +14,7 @@ const ProductCard = ({ item, onPress, isLoading }) =>{
   const { shoppingCart, removeItemFromShoppingCart, addItemToShoppingCart } = useShoppingCart();
   const onIncrementCount = () => addItemToShoppingCart({item});
   const onDecreaseCount = () => removeItemFromShoppingCart({item});
-  const count = shoppingCart.find((val) => val._id === item._id)?.count ?? 0;
+  const count = shoppingCart.find((val) => val._id === item?._id)?.count ?? 0;
 
   return(
     <Skeleton

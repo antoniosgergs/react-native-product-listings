@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useAuth from '../hooks/useAuth';
 import { normalize } from '../utils/responsive';
 import {useTheme} from '../context/ThemeContext';
+import Button from '../components/atoms/button/Button';
+import AppTextInput from '../components/atoms/textInput/AppTextInput';
 
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -25,6 +27,12 @@ export default function SignUpScreen() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+    },
   });
 
   const onSubmit = ({firstName, lastName, email, password}) => {
@@ -35,26 +43,17 @@ export default function SignUpScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text }]}>Sign Up</Text>
 
-      <TextInput placeholder="First name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('firstName', text)} />
-      {errors.firstName && <Text style={styles.error}>{errors.firstName.message}</Text>}
+      <AppTextInput placeholder={'First name'} error={errors.firstName} onChangeText={(text) => setValue('firstName', text)}  />
 
-      <TextInput placeholder="Last name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('lastName', text)} />
-      {errors.lastName && <Text style={styles.error}>{errors.lastName.message}</Text>}
+      <AppTextInput placeholder={'Last name'} error={errors.lastName} onChangeText={(text) => setValue('lastName', text)}  />
 
-      <TextInput placeholder="Email" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('email', text)} />
-      {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
+      <AppTextInput placeholder={'Email'} error={errors.email} onChangeText={(text) => setValue('email', text)}  />
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor={colors.inputText}
-        style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]}
-        secureTextEntry
-        onChangeText={(text) => setValue('password', text)}
-      />
-      {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
+      <AppTextInput secureTextEntry placeholder={'Password'} error={errors.password} onChangeText={(text) => setValue('password', text)}  />
 
-
-      <Button title={isPending ? 'Loading...' : 'Sign Up'} onPress={handleSubmit(onSubmit)} />
+      <Button isLoading={isPending} onPress={handleSubmit(onSubmit)}>
+        Sign up
+      </Button>
     </View>
   );
 }
@@ -69,19 +68,5 @@ const styles = StyleSheet.create({
     fontSize: normalize(24),
     marginBottom: normalize(20),
     textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: normalize(10),
-    marginBottom: normalize(10),
-    borderRadius: normalize(5),
-  },
-  error: {
-    color: 'red',
-    marginBottom: normalize(10) },
-  link: {
-    marginTop: normalize(10),
-    alignItems: 'center',
   },
 });

@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
+import {useRoute} from '@react-navigation/native';
+import { View, StyleSheet, Text } from 'react-native';
 import {useTheme} from '../context/ThemeContext';
 import useAuth from '../hooks/useAuth';
+import Button from '../components/atoms/button/Button';
+import AppTextInput from '../components/atoms/textInput/AppTextInput';
 
-const  VerificationScreen = ({ route })=> {
+const  VerificationScreen = ()=> {
+  const route = useRoute();
   const { email } = route.params;
 
   const {verifyOtpMutation} = useAuth();
@@ -19,16 +23,12 @@ const  VerificationScreen = ({ route })=> {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text }]}>Enter OTP</Text>
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]}
-        placeholder="4-digit code"
-        placeholderTextColor={colors.inputText}
-        keyboardType="number-pad"
-        maxLength={4}
-        value={otp}
-        onChangeText={setOtp}
-      />
-      <Button title={isPending ? 'Loading...' : 'Verify'} onPress={handleVerify} />
+
+      <AppTextInput maxLength={4} keyboardType="number-pad" placeholder={'4-digit code'} onChangeText={setOtp} value={otp}  />
+
+      <Button isLoading={isPending} onPress={handleVerify}>
+        Verify
+      </Button>
     </View>
   );
 };
@@ -44,14 +44,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 20,
-    borderRadius: 5,
     textAlign: 'center',
   },
 });
