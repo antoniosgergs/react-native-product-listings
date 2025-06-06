@@ -1,14 +1,14 @@
 import {
   ActivityIndicator,
-  Button,
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Skeleton from 'react-native-reanimated-skeleton';
 import React, {useCallback, useEffect, useLayoutEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
@@ -19,9 +19,10 @@ import useProfile from '../hooks/useProfile';
 import {normalize} from '../utils/responsive';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {launchImageLibrary} from 'react-native-image-picker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {z} from 'zod';
 import {API_URL} from '../utils/constants';
+import AppTextInput from '../components/atoms/textInput/AppTextInput';
 
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -91,14 +92,14 @@ const UserProfile = () => {
   useLayoutEffect(() => {
     const getHeaderRight = () => (
       <View style={styles.header}>
-        <TouchableOpacity onPress={onLogout}>
-          <Ionicons name={'log-out-outline'} size={36} />
-        </TouchableOpacity>
         {isLoadingUpdate ? <ActivityIndicator/> : (
           <TouchableOpacity onPress={handleSubmit(onSubmit)}>
             <Ionicons name={'save-outline'} size={36} />
           </TouchableOpacity>
         )}
+        <TouchableOpacity onPress={onLogout}>
+          <Ionicons name={'log-out-outline'} size={36} />
+        </TouchableOpacity>
       </View>
     );
 
@@ -107,80 +108,109 @@ const UserProfile = () => {
     });
   }, [handleSubmit, navigation, onLogout, onSubmit, isLoadingUpdate]);
 
-  const addUserImageFromGallery = async () => {
-    try {
-      const result = await launchImageLibrary({
+  const addUserImageFromGallery =  () => {
+      launchImageLibrary({
         mediaType: 'photo',
         selectionLimit: 1,
+      }).then((result) => {
+        setValue('newProfileImage', result?.assets?.[0]);
+      }).catch((error) => {
+        crashlytics().recordError(error);
       });
-
-      setValue('newProfileImage', result?.assets?.[0]);
-    } catch (error) {
-      crashlytics().recordError(error);
-    }
   };
 
+  const addUserImageFromCamera = () => {
+    launchCamera().then(result=>{
+        setValue('newProfileImage', result?.assets?.[0]);
+      }).catch((error) => {
+        crashlytics().recordError(error);
+    });
+  };
 
-  const profileImage = watch('profileImage') || watch('newProfileImage');
+  const onAddImage = () => {
+    Alert.alert('Add image', 'Choose how you want to add your profile image', [
+      {
+        text: 'Add from gallery',
+        onPress: addUserImageFromGallery,
+        isPreferred: true,
+      },
+      {
+        text: 'Add from camera',
+        onPress: addUserImageFromCamera,
+      },
+    ],{
+      cancelable: true,
+    });
+  };
 
-  if(isPending){
-    return <ActivityIndicator />;
-  }
+  const profileImage = watch('profileImage')?.uri || watch('newProfileImage')?.uri;
 
    return (
      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
-       <TextInput value={watch('firstName')} placeholder="First name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('firstName', text)} />
-       {errors.firstName && <Text style={styles.error}>{errors.firstName.message}</Text>}
+       <Skeleton
+         isLoading={false}
+         containerStyle={styles.skeleton}
+         layout={[
+           { key: 'image', ...styles.image, ...styles.imageProfile },
+           { key: 'firstName', ...styles.title, height: 20, width: 220, margin: 6 },
+           { key: 'lastName', ...styles.title, height: 20, width: 220, margin: 6 },
+           { key: 'email', ...styles.price, height: 20, width: 220, margin: 6 },
+         ]}>
+         <View style={styles.imageContainer}>
+           <View style={styles.imageProfile}>
+             {profileImage
+               ? <Image source={{ uri: watch('newProfileImage')?.uri ?  watch('newProfileImage').uri : `${API_URL}/${watch('profileImage')}` }} style={styles.image} />
+               : <TouchableOpacity onPress={onAddImage} style={[styles.image, styles.emptyImage, { backgroundColor:colors.borderColor }]}>
+                 <Ionicons name={'add-outline'} size={36} />
+                 <Text>Add image</Text>
+               </TouchableOpacity>
+             }
+           </View>
+         </View>
 
-       <TextInput value={watch('lastName')} placeholder="Last name" placeholderTextColor={colors.inputText} style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.borderColor }]} onChangeText={(text) => setValue('lastName', text)} />
-       {errors.lastName && <Text style={styles.error}>{errors.lastName.message}</Text>}
+         <AppTextInput placeholder={'First name'} value={watch('firstName')} error={errors.firstName} onChangeText={(text) => setValue('firstName', text)}  />
 
-       <Text style={[{ color: colors.text }]}>Email: {watch('email')}</Text>
+         <AppTextInput placeholder={'Last name'} value={watch('lastName')} error={errors.lastName} onChangeText={(text) => setValue('lastName', text)}  />
 
-       {profileImage && <Image source={{ uri: watch('newProfileImage')?.uri ?  watch('newProfileImage').uri : `${API_URL}/${watch('profileImage')}` }} style={styles.image} />}
-
-       <View style={styles.button}>
-         <Button title={'Add profile image from gallery'} onPress={addUserImageFromGallery} />
-       </View>
+         <Text style={[styles.email, { color: colors.text }]}>Email: {watch('email')}</Text>
+       </Skeleton>
      </ScrollView>
    );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+  },
+  skeleton: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: normalize(24),
-    marginBottom: normalize(20),
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: normalize(10),
+  email:{
     marginBottom: normalize(10),
-    borderRadius: normalize(5),
   },
-  error: {
-    color: 'red',
-    marginBottom: normalize(10) },
+  imageContainer:{
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: normalize(10),
+  },
+  imageProfile:{
+    borderRadius: '50%',
+    overflow: 'hidden',
+  },
   image: {
-    width: '100%',
-    height: normalize(300),
-    borderRadius: normalize(12),
+    width: 150,
+    height: 150,
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  button:{
-    marginTop: normalize(9),
-    marginBottom: normalize(70),
+  emptyImage:{
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

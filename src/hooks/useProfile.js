@@ -5,7 +5,7 @@ import {userApi} from '../api/user';
 import useAuthStore from '../store/authStore';
 
 const useProfile = () => {
-  const {email} = useAuthStore();
+  const email = useAuthStore((state) => state.email);
 
   const getUser = async () => {
     const result = await client().get(userApi, {
