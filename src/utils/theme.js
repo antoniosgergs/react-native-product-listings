@@ -10,6 +10,7 @@ const MyLightTheme = {
     inputBackground: '#FFFFFF',
     inputText: '#000000',
     borderColor: '#CCCCCC',
+    buttonBackground: '#FDB7EA',
   },
 };
 
@@ -23,6 +24,7 @@ const  MyDarkTheme = {
     inputBackground: '#1E1E1E',
     inputText: '#FFFFFF',
     borderColor: '#444444',
+    buttonBackground: '#FDB7EA',
   },
 };
 
