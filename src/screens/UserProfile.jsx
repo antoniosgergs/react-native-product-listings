@@ -120,7 +120,7 @@ const UserProfile = () => {
   };
 
   const addUserImageFromCamera = () => {
-    launchCamera().then(result=>{
+    launchCamera({saveToPhotos:true}).then(result=>{
         setValue('newProfileImage', result?.assets?.[0]);
       }).catch((error) => {
         crashlytics().recordError(error);
