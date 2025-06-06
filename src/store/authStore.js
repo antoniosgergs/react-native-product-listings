@@ -3,12 +3,12 @@ import { create } from 'zustand';
 const useAuthStore = create(
       (set) => ({
           isLoggedIn:false,
-          expiresIn: null,
+          refreshToken: null,
           email: null,
-          setAuth: ({ expiresIn, isLoggedIn }) => set({ expiresIn, isLoggedIn }),
+          setAuth: ({ refreshToken, isLoggedIn }) => set({ refreshToken, isLoggedIn }),
           setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
           setEmail: ({ email }) => set({ email }),
-          clearAuth: () => set({ expiresIn: null, email: null, isLoggedIn:false }),
+          clearAuth: () => set({ refreshToken: null, email: null, isLoggedIn:false }),
       })
 );
 
