@@ -5,17 +5,28 @@ import client from '../api/client';
 import {productsApi} from '../api/productsApi';
 import {queryClient} from '../api/queryClient';
 
-const useProducts = ({productId, enabled = false}) => {
+const useProducts = ({productId, sortBy, enabled = false}) => {
   const navigation = useNavigation();
 
   const getProducts = async (pageParam = 1) => {
-    const result = await client().get(`${productsApi}?page=${pageParam}`);
+    const params = {
+      page: pageParam,
+    };
+
+    if(sortBy){
+      params.sortBy = sortBy;
+    }
+
+    const result = await client().get(productsApi, {
+      params,
+    });
+
     return result.data;
   };
 
   const getProductsQuery = useInfiniteQuery({
     enabled: enabled,
-    queryKey: ['products'],
+    queryKey: ['products', sortBy],
     queryFn: ({pageParam}) => getProducts(pageParam),
     getNextPageParam: lastPage => {
       if (lastPage.pagination.currentPage < lastPage.pagination.totalPages) {
@@ -31,7 +42,7 @@ const useProducts = ({productId, enabled = false}) => {
   };
 
   const getProductByIdQuery = useQuery({
-    queryKey: ['product'],
+    queryKey: ['product',  productId],
     queryFn: getProductById,
     enabled: productId ? true : false,
   });
@@ -44,14 +55,16 @@ const useProducts = ({productId, enabled = false}) => {
     formData.append('price', product.price);
     formData.append('location', JSON.stringify({'name':'Dummy Place','longitude':35.12345,'latitude':33.56789}));
 
-    if(product.images){
-      const image = {
-        uri: product.images.uri,
-        type: product.images.type,
-        name: product.images.fileName,
-      };
-
-     formData.append('images', image);
+    if(product?.images?.length > 0) {
+      product.images.forEach(image => {
+        if(image.uri !== '-1'){
+          formData.append('images', {
+            uri: image.uri,
+            type: image.type,
+            name: image.fileName,
+          });
+        }
+      });
     }
 
     return await client().post(productsApi, formData, {
@@ -93,14 +106,16 @@ const useProducts = ({productId, enabled = false}) => {
     formData.append('price', product.price);
     formData.append('location', JSON.stringify({'name': 'Dummy Place', 'longitude': 35.12345, 'latitude': 33.56789}));
 
-    if (product.images) {
-      const image = {
-        uri: product.images.uri,
-        type: product.images.type,
-        name: product.images.fileName,
-      };
-
-      formData.append('images', image);
+    if(product?.images?.length > 0) {
+      product.images.forEach(image => {
+        if(image.uri !== '-1'){
+          formData.append('images', {
+            uri: image.uri,
+            type: image.type,
+            name: image.fileName,
+          });
+        }
+      });
     }
 
     return await client().put(`${productsApi}/${id}`, formData, {
@@ -111,6 +126,10 @@ const useProducts = ({productId, enabled = false}) => {
   };
 
   const onSuccessEditProduct = () => {
+    queryClient.invalidateQueries(['products', productId]);
+
+    navigation.goBack();
+
     Snackbar.show({
       text: 'Product edited successfully',
       textColor: 'green',
