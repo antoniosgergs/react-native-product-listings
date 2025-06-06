@@ -21,6 +21,7 @@ import useProducts from '../hooks/useProducts';
 import AppTextInput from '../components/atoms/textInput/AppTextInput';
 import Snackbar from 'react-native-snackbar';
 import Skeleton from 'react-native-reanimated-skeleton';
+import {API_URL} from '../utils/constants';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -129,8 +130,7 @@ const EditProductScreen = () =>{
   };
 
   // Adding uri:1 to allow user to add an image
-  const tempImages = [...images, {uri:'1'}];
-
+  const tempImages = [...images, {url:'1'}];
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <Skeleton
@@ -142,24 +142,24 @@ const EditProductScreen = () =>{
           { key: 'price', height: 40, width: '100%', marginBottom: 10 },
           { key: 'image', ...styles.emptyImage, width: '100%' },
         ]}>
-          <AppTextInput placeholder={'Name'} error={errors.title} onChangeText={(text) => setValue('title', text)}  />
+          <AppTextInput placeholder={'Name'} value={watch('title')} error={errors.title} onChangeText={(text) => setValue('title', text)}  />
 
-          <AppTextInput multiline numberOfLines={4} placeholder={'Description'} error={errors.description} onChangeText={(text) => setValue('description', text)}  />
+          <AppTextInput multiline numberOfLines={4} value={watch('description')} placeholder={'description'} error={errors.description} onChangeText={(text) => setValue('description', text)}  />
 
-          <AppTextInput keyboardType={'number-pad'} placeholder={'Price'} error={errors.price} onChangeText={(text) => setValue('price', +text)}  />
+          <AppTextInput keyboardType={'number-pad'} placeholder={'Price'} value={`${watch('price')}`} error={errors.price} onChangeText={(text) => setValue('price', +text)}  />
 
           {tempImages.map((image) => {
-            const { uri } = image ?? {};
+            const { url } = image ?? {};
 
-            if (uri === '1') {
+            if (url === '1') {
               return (
-                <TouchableOpacity onPress={addProductImage} key={uri} style={[styles.image, styles.emptyImage, { backgroundColor:colors.borderColor, width: screenWidth - (16 * 2) }]}>
+                <TouchableOpacity onPress={addProductImage} key={url} style={[styles.image, styles.emptyImage, { backgroundColor:colors.borderColor, width: screenWidth - (16 * 2) }]}>
                   <Ionicons name={'add-outline'} size={36} />
                   <Text>Add image</Text>
                 </TouchableOpacity>
               );
             } else {
-              return <Image source={{ uri }} style={[styles.image]} key={uri} />;
+              return <Image source={{ uri:`${API_URL}${url}` }} style={[styles.image]} key={url} />;
             }
           })}
           {errors.images && <Text style={styles.error}>{errors.images.message}</Text>}

@@ -12,7 +12,6 @@ import {useTheme} from '../context/ThemeContext';
 import {MyLightTheme, MyDarkTheme} from '../utils/theme';
 import TabNavigator from './TabNavigator';
 import {APP_PREFIXES} from '../utils/constants';
-import {storage} from '../utils/mmkv';
 import useAuthStore from '../store/authStore';
 import useNotification from '../hooks/useNotification';
 import useDeepLink from '../store/deepLink';
@@ -32,17 +31,10 @@ const linking = {
 
 const AppNavigator = () => {
   const {setDeepLink } = useDeepLink();
-  const {isLoggedIn,setIsLoggedIn } = useAuthStore();
-  const accessToken = storage.getString('accessToken');
+  const {isLoggedIn } = useAuthStore();
   const { isDarkMode } = useTheme();
 
   useNotification();
-
-  useEffect(() => {
-    if(accessToken && !isLoggedIn){
-      setIsLoggedIn(true);
-    }
-  },[accessToken, isLoggedIn, setIsLoggedIn]);
 
   useEffect(() => {
       Linking.getInitialURL().then((url) => {
