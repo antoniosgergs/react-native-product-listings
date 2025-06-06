@@ -1,5 +1,6 @@
 import {useMutation} from '@tanstack/react-query';
 import {useCallback} from 'react';
+import {Linking} from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import {useNavigation} from '@react-navigation/native';
 import crashlytics from '@react-native-firebase/crashlytics';
@@ -7,9 +8,11 @@ import useAuthStore from '../store/authStore';
 import {loginApi, signUpApi, verifyOtpApi} from '../api/authApis';
 import client from '../api/client';
 import {storage} from '../utils/mmkv';
+import useDeepLink from '../store/deepLink';
 
 const useAuth = () =>{
   const navigation = useNavigation();
+  const {deepLink } = useDeepLink();
   const { setAuth, setEmail, clearAuth } = useAuthStore();
 
   const loginFn = async ({email, password}) => {
@@ -27,7 +30,14 @@ const useAuth = () =>{
 
   const onSuccessLogin = async ({email, result}) => {
     crashlytics().log('User signed in.');
-    const {accessToken, expiresIn} = result?.data?.data ?? {};
+    const {accessToken, refreshToken} = result?.data?.data ?? {};
+
+    // Navigate to deeplink after login if exists
+    if(deepLink){
+      Linking.openURL(deepLink)
+        .then(()=>{})
+        .catch(()=>{});
+    }
 
     storage.set('accessToken', accessToken);
 
@@ -39,7 +49,7 @@ const useAuth = () =>{
       crashlytics().recordError(error);
     }
 
-    setAuth({expiresIn, isLoggedIn: true});
+    setAuth({refreshToken, isLoggedIn: true});
   };
 
   const onErrorLogin = (error) => {
@@ -119,6 +129,7 @@ const useAuth = () =>{
   const onLogout = useCallback(() => {
     crashlytics().log('User logged out.');
     clearAuth();
+    storage.set('accessToken', '');
   }, [clearAuth]);
 
   return {loginMutation, signUpMutation, verifyOtpMutation, onLogout};
